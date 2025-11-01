@@ -1,0 +1,69 @@
+{
+  "name": "neosync",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "start": "docusaurus start",
+    "build-deps": "npm run proto-build && npm run combine-openapi",
+    "build": "npm run build-deps && docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "typecheck": "tsc",
+    "knip": "knip",
+    "knip:production": "knip --production --strict",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write .",
+    "proto-build": "docusaurus generate-proto-docs",
+    "combine-openapi": "redocly join openapi/mgmt/v1alpha1/*.yaml -o openapi/neosync.mgmt.v1alpha1.yaml",
+    "spellcheck": "cspell"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.7.0",
+    "@docusaurus/preset-classic": "^3.7.0",
+    "@mdx-js/react": "^3.1.0",
+    "@radix-ui/react-icons": "^1.3.2",
+    "autoprefixer": "^10.4.21",
+    "class-variance-authority": "^0.7.1",
+    "docusaurus-protobuffet": "^0.3.3",
+    "postcss": "^8.5.3",
+    "posthog-docusaurus": "^2.0.4",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.5.0",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "^3.7.0",
+    "@docusaurus/types": "^3.7.0",
+    "@redocly/cli": "^1.34.2",
+    "@tsconfig/docusaurus": "^2.0.3",
+    "cspell": "^8.18.1",
+    "knip": "^5.53.0",
+    "postcss-import": "^16.1.0",
+    "postcss-nesting": "^13.0.1",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0"
+  }
+}

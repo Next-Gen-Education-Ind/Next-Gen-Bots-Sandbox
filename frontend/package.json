@@ -1,0 +1,31 @@
+{
+  "scripts": {
+    "build": "turbo run build --env-mode=loose",
+    "build:packages": "turbo run build --env-mode=loose --filter=./packages/*",
+    "build:pkgs": "npm run build:packages",
+    "clean": "turbo run clean && rm -rf .turbo",
+    "dev": "turbo run dev --env-mode=loose",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "docker": "turbo prune @neosync/app --docker",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write .",
+    "knip": "knip",
+    "knip:production": "knip --production --strict"
+  },
+  "devDependencies": {
+    "knip": "^5.46.5",
+    "prettier": "^3.5.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "turbo": "^2.4.4",
+    "typescript": "^5.8.2"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "npm@10.9.2",
+  "name": "frontend"
+}

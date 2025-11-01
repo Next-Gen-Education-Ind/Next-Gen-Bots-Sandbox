@@ -1,0 +1,20 @@
+# Build the manager binary
+FROM golang:1.24-bookworm AS builder
+
+WORKDIR /workspace
+
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive \
+  apt-get install --no-install-recommends -y \
+  build-essential
+
+RUN go install github.com/air-verse/air@v1.61.7
+
+# Copy the Go Modules manifests
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY worker/dev/build/.air.toml .air.toml
+
+CMD ["air", "-c", "/workspace/.air.toml"]

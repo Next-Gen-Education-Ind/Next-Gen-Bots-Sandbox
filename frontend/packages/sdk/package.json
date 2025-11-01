@@ -1,0 +1,53 @@
+{
+  "name": "@neosync/sdk",
+  "version": "0.0.0",
+  "description": "Neosync SDK",
+  "private": false,
+  "files": [
+    "dist/**"
+  ],
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "clean": "rm -rf dist && rm -rf .turbo",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "lint": "eslint 'src/**/*.{js,ts,tsx}'",
+    "typecheck": "tsc --noEmit"
+  },
+  "author": "nickzelei",
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.3.6"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.2.5",
+    "@connectrpc/connect": "^2.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nucleuscloud/neosync.git"
+  },
+  "keywords": [
+    "neosync",
+    "sdk"
+  ],
+  "bugs": {
+    "url": "https://github.com/nucleuscloud/neosync/issues"
+  },
+  "homepage": "https://github.com/nucleuscloud/neosync#readme"
+}

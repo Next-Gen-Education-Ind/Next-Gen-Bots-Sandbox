@@ -1,0 +1,542 @@
+syntax = "proto3";
+
+package mgmt.v1alpha1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+message GetUserRequest {}
+message GetUserResponse {
+  // The unique identifier of the user that was retrieved.
+  string user_id = 1;
+}
+
+message SetUserRequest {}
+message SetUserResponse {
+  // The unique identifier of the user that was created.
+  string user_id = 1;
+}
+
+message GetUserAccountsRequest {}
+message GetUserAccountsResponse {
+  // The list of accounts that the user belongs to.
+  repeated UserAccount accounts = 1;
+}
+
+message UserAccount {
+  // The unique identifier of the account
+  string id = 1;
+  // The account slug
+  string name = 2;
+  // The type of account
+  UserAccountType type = 3;
+  // Whether or not the account has an associated stripe customer id
+  bool has_stripe_customer_id = 4;
+}
+
+enum UserAccountType {
+  USER_ACCOUNT_TYPE_UNSPECIFIED = 0;
+  // A personal account is an account that is owned by a single user.
+  USER_ACCOUNT_TYPE_PERSONAL = 1;
+  // A team account is an account that is owned by a team of users.
+  USER_ACCOUNT_TYPE_TEAM = 2;
+  // An enterprise account is an account that is owned by an enterprise.
+  USER_ACCOUNT_TYPE_ENTERPRISE = 3;
+}
+
+message ConvertPersonalToTeamAccountRequest {
+  // The name of the team account
+  string name = 1 [(buf.validate.field).string.pattern = "^[a-z0-9-]{3,100}$"];
+  // Optionally provide the personal account to convert. This may be used in break-glass scenarios where there are multiple personal accounts
+  // And we want to convert one of them. If not provided, it will find the first one and convert it, leaving the other.
+  optional string account_id = 2 [(buf.validate.field).string.uuid = true];
+}
+message ConvertPersonalToTeamAccountResponse {
+  // The id of the team account (will be the same identifier as the personal account)
+  string account_id = 1;
+  // If NeosyncCloud, will respond with a checkout session url so they can setup billing
+  optional string checkout_session_url = 2;
+  // The identifier of the newly created personal account
+  string new_personal_account_id = 3;
+}
+
+message SetPersonalAccountRequest {}
+message SetPersonalAccountResponse {
+  // The unique identifier of the personal account that was created.
+  string account_id = 1;
+}
+
+message IsUserInAccountRequest {
+  // The unique identifier of the account to check if the user is in.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+message IsUserInAccountResponse {
+  // Whether or not the user is in the account.
+  bool ok = 1;
+}
+
+message GetAccountTemporalConfigRequest {
+  // The unique identifier of the account to get the temporal config for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+message GetAccountTemporalConfigResponse {
+  // The temporal config for the account.
+  AccountTemporalConfig config = 1;
+}
+
+message SetAccountTemporalConfigRequest {
+  // The unique identifier of the account to set the temporal config for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+  // The temporal config to set for the account.
+  AccountTemporalConfig config = 2;
+}
+message SetAccountTemporalConfigResponse {
+  // The temporal config that was set for the account.
+  AccountTemporalConfig config = 1;
+}
+
+message AccountTemporalConfig {
+  // The temporal url for the account.
+  string url = 1 [(buf.validate.field).string.min_len = 1];
+  // The temporal namespace for the account.
+  string namespace = 2 [(buf.validate.field).string.min_len = 1];
+  // The temporal sync job queue name for the account.
+  string sync_job_queue_name = 3 [(buf.validate.field).string.min_len = 1];
+}
+
+message CreateTeamAccountRequest {
+  // The name of the team account
+  string name = 1 [(buf.validate.field).string.pattern = "^[a-z0-9-]{3,100}$"];
+}
+message CreateTeamAccountResponse {
+  // The unique identifier of the team account that was created.
+  string account_id = 1;
+  // If NeosyncCloud, will respond with a checkout session url so they can setup billing
+  optional string checkout_session_url = 2;
+}
+
+message AccountUser {
+  // The unique identifier of the user.
+  string id = 1;
+  // The name of the user (if there is one)
+  string name = 2;
+  // The image of the user (if there is one)
+  string image = 3;
+  // The email of the user.
+  string email = 4;
+  // The role of the user in the account. If RBAC is not enabled, will be unspecified.
+  AccountRole role = 5;
+}
+
+message GetTeamAccountMembersRequest {
+  // The unique identifier of the account to get the members for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+message GetTeamAccountMembersResponse {
+  repeated AccountUser users = 1;
+}
+
+message RemoveTeamAccountMemberRequest {
+  // The unique identifier of the user to remove from the account.
+  string user_id = 1 [(buf.validate.field).string.uuid = true];
+  // The unique identifier of the account to remove the user from.
+  string account_id = 2 [(buf.validate.field).string.uuid = true];
+}
+message RemoveTeamAccountMemberResponse {}
+
+message InviteUserToTeamAccountRequest {
+  // The unique identifier of the account to invite the user to.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+  // The email of the user to invite.
+  string email = 2 [(buf.validate.field).string.min_len = 1];
+  // The role of the user to invite. Only used if RBAC is enabled.
+  optional AccountRole role = 3;
+}
+
+message AccountInvite {
+  // The unique identifier of the invite.
+  string id = 1;
+  // The unique identifier of the account to invite the user to.
+  string account_id = 2;
+  // The unique identifier of the user that sent the invite.
+  string sender_user_id = 3;
+  // The email of the user to invite.
+  string email = 4;
+  // The token that the user will use to accept the invite.
+  string token = 5;
+  // Whether or not the invite has been accepted.
+  bool accepted = 6;
+  // The time when the invite was created.
+  google.protobuf.Timestamp created_at = 7;
+  // The time when the invite was last updated.
+  google.protobuf.Timestamp updated_at = 8;
+  // The time when the invite expires.
+  google.protobuf.Timestamp expires_at = 9;
+  // The role of the user to invite. Only used if RBAC is enabled.
+  AccountRole role = 10;
+}
+
+message InviteUserToTeamAccountResponse {
+  // The invite that was created.
+  AccountInvite invite = 1;
+}
+
+message GetTeamAccountInvitesRequest {
+  // The unique identifier of the account to get the invites for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+message GetTeamAccountInvitesResponse {
+  // The list of invites for the account.
+  repeated AccountInvite invites = 1;
+}
+
+message RemoveTeamAccountInviteRequest {
+  // The unique identifier of the invite to remove.
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+message RemoveTeamAccountInviteResponse {}
+
+message AcceptTeamAccountInviteRequest {
+  // The token that the user will use to accept the invite.
+  string token = 1 [(buf.validate.field).string.min_len = 1];
+}
+message AcceptTeamAccountInviteResponse {
+  // The account that the user was invited to.
+  UserAccount account = 1;
+}
+
+message GetSystemInformationRequest {}
+message GetSystemInformationResponse {
+  // The Git tagged version
+  string version = 1;
+  // The Git commit
+  string commit = 2;
+  // The Go compiler flag that was used to build this version of Neosync
+  string compiler = 3;
+  // The Go platform flag that was used to build this version of Neosync
+  string platform = 4;
+  // The time when the build was created
+  google.protobuf.Timestamp build_date = 5;
+  // The license information for the system
+  SystemLicense license = 6;
+}
+
+message SystemLicense {
+  // Whether or not a valid license was found
+  bool is_valid = 1;
+  // The time when the license expires
+  google.protobuf.Timestamp expires_at = 2;
+  // Whether or not the license is for NeosyncCloud
+  bool is_neosync_cloud = 3;
+}
+
+message GetAccountOnboardingConfigRequest {
+  // The unique identifier of the account to get the onboarding config for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+message GetAccountOnboardingConfigResponse {
+  // The onboarding config for the account.
+  AccountOnboardingConfig config = 1;
+}
+
+message SetAccountOnboardingConfigRequest {
+  // The unique identifier of the account to set the onboarding config for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+  // The onboarding config to set for the account.
+  AccountOnboardingConfig config = 2;
+}
+message SetAccountOnboardingConfigResponse {
+  // The onboarding config that was set for the account.
+  AccountOnboardingConfig config = 1;
+}
+
+message AccountOnboardingConfig {
+  reserved 1; // Was: bool has_created_source_connection = 1;
+  reserved 2; // Was: bool has_created_destination_connection = 2;
+  reserved 3; // Was: bool has_created_job = 3;
+  reserved 4; // Was: bool has_invited_members = 4;
+  // Whether or not the account has completed onboarding.
+  bool has_completed_onboarding = 5;
+}
+
+message GetAccountStatusRequest {
+  // The unique identifier of the account to get the status for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+enum BillingStatus {
+  BILLING_STATUS_UNSPECIFIED = 0;
+  // Corresponds to a billing subscription and rolls up various states into active
+  // This may be split into the future to be more granular and mirror the underlying billing system
+  BILLING_STATUS_ACTIVE = 1;
+  // If the system could not find any active subscriptions
+  BILLING_STATUS_EXPIRED = 2;
+  // The account does not have an active subscription and is in a valid trial period
+  BILLING_STATUS_TRIAL_ACTIVE = 3;
+  // The account does not have an active subscription and the trial period has ended
+  BILLING_STATUS_TRIAL_EXPIRED = 4;
+}
+
+message GetAccountStatusResponse {
+  // A count of the currently used records for the current billing period.
+  // This may go over the allowed record count depending on when the record count is polled by the metric system.
+  uint64 used_record_count = 1;
+  // The allowed record count. It will be null if there is no limit.
+  optional uint64 allowed_record_count = 2;
+
+  // The current subscription status determined by the billing system.
+  BillingStatus subscription_status = 3;
+}
+
+message IsAccountStatusValidRequest {
+  // The unique identifier of the account to get the status for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+  // An optional count of records to be added to the current usage for validation.
+  optional uint64 requested_record_count = 2;
+}
+
+message IsAccountStatusValidResponse {
+  // Whether or not the account is valid.
+  bool is_valid = 1;
+  // If the account is not valid, a reason for why may be provided.
+  optional string reason = 2;
+  // Whether or not the process should decide to continue polling for validitiy updates
+  bool should_poll = 3;
+  // A count of the currently used records for the current billing period.
+  // This may go over the allowed record count depending on when the record count is polled by the metric system.
+  reserved 4; // Was: uint64 used_record_count = 4;
+  // The allowed record count. It will be null if there is no limit.
+  reserved 5; // Was: optional uint64 allowed_record_count = 5;
+  // The current status of the account. Default is valid.
+  AccountStatus account_status = 6;
+  // The time when the trial expires
+  optional google.protobuf.Timestamp trial_expires_at = 7;
+}
+
+enum AccountStatus {
+  // Default value, should be used when no reason is specified
+  ACCOUNT_STATUS_REASON_UNSPECIFIED = 0;
+  reserved 1, 2;
+  reserved "ACCOUNT_STATUS_EXCEEDS_ALLOWED_LIMIT", "ACCOUNT_STATUS_REQUESTED_EXCEEDS_LIMIT";
+  // Account is currently in an expired state
+  ACCOUNT_STATUS_ACCOUNT_IN_EXPIRED_STATE = 3;
+  // The account is currently in an active trial period
+  ACCOUNT_STATUS_ACCOUNT_TRIAL_ACTIVE = 4;
+  // The account is past the active trial period
+  ACCOUNT_STATUS_ACCOUNT_TRIAL_EXPIRED = 5;
+}
+
+message GetAccountBillingCheckoutSessionRequest {
+  // The unique identifier of the account to get the billing checkout session for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetAccountBillingCheckoutSessionResponse {
+  // The url that will be redirected to
+  string checkout_session_url = 1;
+}
+
+message GetAccountBillingPortalSessionRequest {
+  // The unique identifier of the account to get the billing portal session for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetAccountBillingPortalSessionResponse {
+  // The url that will be redirected to
+  string portal_session_url = 1;
+}
+
+message GetBillingAccountsRequest {
+  // Optional list of account identifiers to filter the response by
+  repeated string account_ids = 1;
+}
+
+message GetBillingAccountsResponse {
+  // The list of accounts that have a billing id.
+  repeated UserAccount accounts = 1;
+}
+
+message SetBillingMeterEventRequest {
+  // The unique identifier of the account to apply this metered event to.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+
+  // The metered event name
+  string event_name = 2 [(buf.validate.field).string.min_len = 1];
+  // The value of the meter for the given time
+  string value = 3 [(buf.validate.field).string.min_len = 1];
+  // The unique identifier of this metered event
+  string event_id = 4 [(buf.validate.field).string.min_len = 1];
+  // The time of the event in Unix Epoch format. Defaults to the current timestamp if not specified.
+  optional uint64 timestamp = 5;
+}
+
+message SetBillingMeterEventResponse {}
+
+message SetUserRoleRequest {
+  // The unique identifier of the account to apply this role to.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+  // The unique identifier of the user that this will be applied to.
+  string user_id = 2 [(buf.validate.field).string.uuid = true];
+  // The role that this user will obtain.
+  AccountRole role = 3;
+}
+
+enum AccountRole {
+  // Default value, this should not be used, but will default to ACCOUNT_ROLE_JOB_VIEWER
+  ACCOUNT_ROLE_UNSPECIFIED = 0;
+  // Admin, can do anything in the account.
+  ACCOUNT_ROLE_ADMIN = 1;
+  // Can view, edit jobs and connections
+  ACCOUNT_ROLE_JOB_DEVELOPER = 2;
+  // Can view
+  ACCOUNT_ROLE_JOB_VIEWER = 3;
+  // Can view and execute
+  ACCOUNT_ROLE_JOB_EXECUTOR = 4;
+}
+
+message SetUserRoleResponse {}
+
+message HasPermissionRequest {
+  // The unique identifier of the account to check the permission for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+  // The resource to check the permission for.
+  ResourcePermission resource = 2;
+}
+
+message ResourcePermission {
+  // The type of resource to check the permission for.
+  Type type = 1;
+  // The unique identifier of the resource to check the permission for.
+  string id = 2 [(buf.validate.field).string.min_len = 1];
+  // The action to check for.
+  Action action = 3;
+
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    TYPE_ACCOUNT = 1;
+    TYPE_CONNECTION = 2;
+    TYPE_JOB = 3;
+  }
+
+  enum Action {
+    ACTION_UNSPECIFIED = 0;
+    ACTION_CREATE = 1;
+    ACTION_READ = 2;
+    ACTION_UPDATE = 3;
+    ACTION_DELETE = 4;
+  }
+}
+
+message HasPermissionResponse {
+  // Whether or not the user has the given permission.
+  bool has_permission = 1;
+}
+
+message HasPermissionsRequest {
+  // The unique identifier of the account to check the permissions for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+  // The resources to check the permissions for.
+  repeated ResourcePermission resources = 2;
+}
+
+message HasPermissionsResponse {
+  // Parallel array to the resources, with the same index.
+  repeated bool assertions = 1;
+}
+
+// Service that manages users, accounts, and billing
+service UserAccountService {
+  // Retrieves the current user.
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Sets the current user.
+  rpc SetUser(SetUserRequest) returns (SetUserResponse) {}
+
+  // Retrieves the list of accounts that the user belongs to.
+  rpc GetUserAccounts(GetUserAccountsRequest) returns (GetUserAccountsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+
+  // Sets the current personal account.
+  rpc SetPersonalAccount(SetPersonalAccountRequest) returns (SetPersonalAccountResponse) {}
+
+  // Convert a personal account to a team account retaining all of the jobs and connections. This will also create a new empty personal account.
+  rpc ConvertPersonalToTeamAccount(ConvertPersonalToTeamAccountRequest) returns (ConvertPersonalToTeamAccountResponse) {}
+
+  // Creates a new team account
+  rpc CreateTeamAccount(CreateTeamAccountRequest) returns (CreateTeamAccountResponse) {}
+  // Checks if the user is in the account.
+  rpc IsUserInAccount(IsUserInAccountRequest) returns (IsUserInAccountResponse) {}
+  // Retrieves the temporal config for the account.
+  rpc GetAccountTemporalConfig(GetAccountTemporalConfigRequest) returns (GetAccountTemporalConfigResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Sets the temporal config for the account.
+  rpc SetAccountTemporalConfig(SetAccountTemporalConfigRequest) returns (SetAccountTemporalConfigResponse) {}
+
+  // Retrieves the list of members in the team account.
+  rpc GetTeamAccountMembers(GetTeamAccountMembersRequest) returns (GetTeamAccountMembersResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Removes a member from the team account.
+  rpc RemoveTeamAccountMember(RemoveTeamAccountMemberRequest) returns (RemoveTeamAccountMemberResponse) {}
+  // Invites a user to the team account.
+  rpc InviteUserToTeamAccount(InviteUserToTeamAccountRequest) returns (InviteUserToTeamAccountResponse) {}
+  // Retrieves the list of invites for the team account.
+  rpc GetTeamAccountInvites(GetTeamAccountInvitesRequest) returns (GetTeamAccountInvitesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Removes an invite from the team account.
+  rpc RemoveTeamAccountInvite(RemoveTeamAccountInviteRequest) returns (RemoveTeamAccountInviteResponse) {}
+  // Accepts an invite to the team account.
+  rpc AcceptTeamAccountInvite(AcceptTeamAccountInviteRequest) returns (AcceptTeamAccountInviteResponse) {}
+
+  // Retrieves the system information.
+  rpc GetSystemInformation(GetSystemInformationRequest) returns (GetSystemInformationResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+
+  // Retrieves the onboarding config for the account.
+  rpc GetAccountOnboardingConfig(GetAccountOnboardingConfigRequest) returns (GetAccountOnboardingConfigResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Sets the onboarding config for the account.
+  rpc SetAccountOnboardingConfig(SetAccountOnboardingConfigRequest) returns (SetAccountOnboardingConfigResponse) {}
+
+  // Returns different metrics on the account status for the active billing period
+  rpc GetAccountStatus(GetAccountStatusRequest) returns (GetAccountStatusResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Distils the account status down to whether not it is in a valid state.
+  rpc IsAccountStatusValid(IsAccountStatusValidRequest) returns (IsAccountStatusValidResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+
+  // Returns a new checkout session for the account to subscribe
+  rpc GetAccountBillingCheckoutSession(GetAccountBillingCheckoutSessionRequest) returns (GetAccountBillingCheckoutSessionResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+
+  // Returns a new billing portal session if the account has a billing customer id
+  rpc GetAccountBillingPortalSession(GetAccountBillingPortalSessionRequest) returns (GetAccountBillingPortalSessionResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+
+  // Returns user accounts that have a billing id.
+  rpc GetBillingAccounts(GetBillingAccountsRequest) returns (GetBillingAccountsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+
+  // Sends a new metered event to the billing system
+  rpc SetBillingMeterEvent(SetBillingMeterEventRequest) returns (SetBillingMeterEventResponse) {}
+
+  // Sets the users role
+  rpc SetUserRole(SetUserRoleRequest) returns (SetUserRoleResponse) {}
+
+  // Checks if the user has the given permission
+  rpc HasPermission(HasPermissionRequest) returns (HasPermissionResponse) {}
+
+  // Bulk check if a user has the given permissions
+  rpc HasPermissions(HasPermissionsRequest) returns (HasPermissionsResponse) {}
+}

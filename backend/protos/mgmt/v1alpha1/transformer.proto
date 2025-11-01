@@ -1,0 +1,680 @@
+syntax = "proto3";
+
+package mgmt.v1alpha1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+message GetSystemTransformersRequest {}
+
+message GetSystemTransformersResponse {
+  repeated SystemTransformer transformers = 1;
+}
+
+message GetSystemTransformerBySourceRequest {
+  // The source of the transformer to retrieve.
+  TransformerSource source = 1;
+}
+
+message GetSystemTransformerBySourceResponse {
+  SystemTransformer transformer = 1;
+}
+
+message GetUserDefinedTransformersRequest {
+  // The unique identifier of the account to get the user defined transformers for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetUserDefinedTransformersResponse {
+  repeated UserDefinedTransformer transformers = 1;
+}
+
+message GetUserDefinedTransformerByIdRequest {
+  // The unique identifier of the user defined transformer to get.
+  string transformer_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetUserDefinedTransformerByIdResponse {
+  UserDefinedTransformer transformer = 1;
+}
+
+message CreateUserDefinedTransformerRequest {
+  // The unique identifier of the account to create the user defined transformer for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+  // The name of the user defined transformer.
+  string name = 2 [(buf.validate.field).string.pattern = "^[a-z0-9-]{3,100}$"];
+  // The description of the user defined transformer.
+  string description = 3;
+
+  reserved 4; // Was: string type = 4;
+  // The source of the user defined transformer.
+  TransformerSource source = 5;
+  // The configuration of the user defined transformer.
+  TransformerConfig transformer_config = 6;
+}
+
+message CreateUserDefinedTransformerResponse {
+  UserDefinedTransformer transformer = 1;
+}
+
+message DeleteUserDefinedTransformerRequest {
+  // The unique identifier of the user defined transformer to delete.
+  string transformer_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteUserDefinedTransformerResponse {}
+
+message UpdateUserDefinedTransformerRequest {
+  // The unique identifier of the user defined transformer to update.
+  string transformer_id = 1 [(buf.validate.field).string.uuid = true];
+  // The name of the user defined transformer.
+  string name = 2 [(buf.validate.field).string.pattern = "^[a-z0-9-]{3,100}$"];
+  // The description of the user defined transformer.
+  string description = 3;
+  // The configuration of the user defined transformer.
+  TransformerConfig transformer_config = 4;
+}
+
+message UpdateUserDefinedTransformerResponse {
+  UserDefinedTransformer transformer = 1;
+}
+
+message IsTransformerNameAvailableRequest {
+  // The unique identifier of the account to check for the availability of the transformer name.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+  // The name of the transformer to check for availability.
+  string transformer_name = 2 [(buf.validate.field).string.pattern = "^[a-z0-9-]{3,100}$"];
+}
+
+message IsTransformerNameAvailableResponse {
+  // Whether or not the transformer name is available.
+  bool is_available = 1;
+}
+
+message UserDefinedTransformer {
+  // The unique identifier of the user defined transformer.
+  string id = 1 [(buf.validate.field).string.uuid = true];
+  // The name of the user defined transformer.
+  string name = 2;
+  // The description of the user defined transformer.
+  string description = 3;
+
+  reserved 4;
+  // @deprecated: data_type is deprecated and will be removed in a future release. Use data_types instead.
+  TransformerDataType data_type = 5 [deprecated = true];
+  // The source of the user defined transformer.
+  TransformerSource source = 6;
+  // The configuration of the user defined transformer.
+  TransformerConfig config = 7;
+  // The date and time the user defined transformer was created.
+  google.protobuf.Timestamp created_at = 8;
+  // The date and time the user defined transformer was last updated.
+  google.protobuf.Timestamp updated_at = 9;
+  // The unique identifier of the account that owns the user defined transformer.
+  string account_id = 10;
+  // The data types supported by the user defined transformer. This is currently calculated based off the origin system transformer.
+  repeated TransformerDataType data_types = 11;
+}
+
+enum TransformerSource {
+  TRANSFORMER_SOURCE_UNSPECIFIED = 0;
+  TRANSFORMER_SOURCE_PASSTHROUGH = 1;
+  TRANSFORMER_SOURCE_GENERATE_DEFAULT = 2;
+  TRANSFORMER_SOURCE_TRANSFORM_JAVASCRIPT = 3;
+  TRANSFORMER_SOURCE_GENERATE_EMAIL = 4;
+  TRANSFORMER_SOURCE_TRANSFORM_EMAIL = 5;
+  TRANSFORMER_SOURCE_GENERATE_BOOL = 6;
+  TRANSFORMER_SOURCE_GENERATE_CARD_NUMBER = 7;
+  TRANSFORMER_SOURCE_GENERATE_CITY = 8;
+  TRANSFORMER_SOURCE_GENERATE_E164_PHONE_NUMBER = 9;
+  TRANSFORMER_SOURCE_GENERATE_FIRST_NAME = 10;
+  TRANSFORMER_SOURCE_GENERATE_FLOAT64 = 11;
+  TRANSFORMER_SOURCE_GENERATE_FULL_ADDRESS = 12;
+  TRANSFORMER_SOURCE_GENERATE_FULL_NAME = 13;
+  TRANSFORMER_SOURCE_GENERATE_GENDER = 14;
+  TRANSFORMER_SOURCE_GENERATE_INT64_PHONE_NUMBER = 15;
+  TRANSFORMER_SOURCE_GENERATE_INT64 = 16;
+  TRANSFORMER_SOURCE_GENERATE_RANDOM_INT64 = 17;
+  TRANSFORMER_SOURCE_GENERATE_LAST_NAME = 18;
+  TRANSFORMER_SOURCE_GENERATE_SHA256HASH = 19;
+  TRANSFORMER_SOURCE_GENERATE_SSN = 20;
+  TRANSFORMER_SOURCE_GENERATE_STATE = 21;
+  TRANSFORMER_SOURCE_GENERATE_STREET_ADDRESS = 22;
+  TRANSFORMER_SOURCE_GENERATE_STRING_PHONE_NUMBER = 23;
+  TRANSFORMER_SOURCE_GENERATE_STRING = 24;
+  TRANSFORMER_SOURCE_GENERATE_RANDOM_STRING = 25;
+  TRANSFORMER_SOURCE_GENERATE_UNIXTIMESTAMP = 26;
+  TRANSFORMER_SOURCE_GENERATE_USERNAME = 27;
+  TRANSFORMER_SOURCE_GENERATE_UTCTIMESTAMP = 28;
+  TRANSFORMER_SOURCE_GENERATE_UUID = 29;
+  TRANSFORMER_SOURCE_GENERATE_ZIPCODE = 30;
+  TRANSFORMER_SOURCE_TRANSFORM_E164_PHONE_NUMBER = 31;
+  TRANSFORMER_SOURCE_TRANSFORM_FIRST_NAME = 32;
+  TRANSFORMER_SOURCE_TRANSFORM_FLOAT64 = 33;
+  TRANSFORMER_SOURCE_TRANSFORM_FULL_NAME = 34;
+  TRANSFORMER_SOURCE_TRANSFORM_INT64_PHONE_NUMBER = 35;
+  TRANSFORMER_SOURCE_TRANSFORM_INT64 = 36;
+  TRANSFORMER_SOURCE_TRANSFORM_LAST_NAME = 37;
+  TRANSFORMER_SOURCE_TRANSFORM_PHONE_NUMBER = 38;
+  TRANSFORMER_SOURCE_TRANSFORM_STRING = 39;
+  TRANSFORMER_SOURCE_GENERATE_NULL = 40;
+  TRANSFORMER_SOURCE_GENERATE_CATEGORICAL = 42;
+  TRANSFORMER_SOURCE_TRANSFORM_CHARACTER_SCRAMBLE = 43;
+  TRANSFORMER_SOURCE_USER_DEFINED = 44;
+  TRANSFORMER_SOURCE_GENERATE_JAVASCRIPT = 45;
+  TRANSFORMER_SOURCE_GENERATE_COUNTRY = 46;
+  // NeosyncCloud/Enterprise only transformer for anonymizing PII Text
+  TRANSFORMER_SOURCE_TRANSFORM_PII_TEXT = 47;
+  TRANSFORMER_SOURCE_GENERATE_BUSINESS_NAME = 48;
+  TRANSFORMER_SOURCE_GENERATE_IP_ADDRESS = 49;
+  TRANSFORMER_SOURCE_TRANSFORM_UUID = 50;
+  TRANSFORMER_SOURCE_TRANSFORM_SCRAMBLE_IDENTITY = 51;
+}
+
+enum TransformerDataType {
+  TRANSFORMER_DATA_TYPE_UNSPECIFIED = 0;
+  TRANSFORMER_DATA_TYPE_STRING = 1;
+  TRANSFORMER_DATA_TYPE_INT64 = 2;
+  TRANSFORMER_DATA_TYPE_BOOLEAN = 3;
+  TRANSFORMER_DATA_TYPE_FLOAT64 = 4;
+  TRANSFORMER_DATA_TYPE_NULL = 5;
+  TRANSFORMER_DATA_TYPE_ANY = 6;
+  TRANSFORMER_DATA_TYPE_TIME = 7;
+  TRANSFORMER_DATA_TYPE_UUID = 8;
+}
+
+// A system transformer is a transformer that is built into the Neosync platform.
+// It can be used directly in job mappings or used in user-defined transformers to snapshot a specific configuration.
+message SystemTransformer {
+  // The name of the transformer.
+  string name = 1;
+  // The description of the transformer.
+  string description = 2;
+  // @deprecated: data_types is deprecated and will be removed in a future release. Use data_types instead.
+  TransformerDataType data_type = 3 [deprecated = true];
+  // The source of the transformer.
+  TransformerSource source = 4;
+  // The configuration of the transformer.
+  TransformerConfig config = 5;
+  // The data types supported by the transformer.
+  repeated TransformerDataType data_types = 6;
+  repeated SupportedJobType supported_job_types = 7;
+}
+
+enum SupportedJobType {
+  SUPPORTED_JOB_TYPE_UNSPECIFIED = 0;
+  // Determines if a transformer is supported for a sync job.
+  SUPPORTED_JOB_TYPE_SYNC = 1;
+  // Determines if a transformer is supported for a generate job.
+  SUPPORTED_JOB_TYPE_GENERATE = 2;
+}
+
+// The configuration for a transformer. This determines what type of transformation or generation is performed.
+message TransformerConfig {
+  oneof config {
+    option (buf.validate.oneof).required = true;
+
+    GenerateEmail generate_email_config = 1;
+    TransformEmail transform_email_config = 2;
+    GenerateBool generate_bool_config = 3;
+    GenerateCardNumber generate_card_number_config = 4;
+    GenerateCity generate_city_config = 5;
+    GenerateE164PhoneNumber generate_e164_phone_number_config = 6;
+    GenerateFirstName generate_first_name_config = 7;
+    GenerateFloat64 generate_float64_config = 8;
+    GenerateFullAddress generate_full_address_config = 9;
+    GenerateFullName generate_full_name_config = 10;
+    GenerateGender generate_gender_config = 11;
+    GenerateInt64PhoneNumber generate_int64_phone_number_config = 12;
+    GenerateInt64 generate_int64_config = 13;
+    GenerateLastName generate_last_name_config = 14;
+    GenerateSha256Hash generate_sha256hash_config = 15;
+    GenerateSSN generate_ssn_config = 16;
+    GenerateState generate_state_config = 17;
+    GenerateStreetAddress generate_street_address_config = 18;
+    GenerateStringPhoneNumber generate_string_phone_number_config = 19;
+    GenerateString generate_string_config = 20;
+    GenerateUnixTimestamp generate_unixtimestamp_config = 21;
+    GenerateUsername generate_username_config = 22;
+    GenerateUtcTimestamp generate_utctimestamp_config = 23;
+    GenerateUuid generate_uuid_config = 24;
+    GenerateZipcode generate_zipcode_config = 25;
+    TransformE164PhoneNumber transform_e164_phone_number_config = 26;
+    TransformFirstName transform_first_name_config = 27;
+    TransformFloat64 transform_float64_config = 28;
+    TransformFullName transform_full_name_config = 29;
+    TransformInt64PhoneNumber transform_int64_phone_number_config = 30;
+    TransformInt64 transform_int64_config = 31;
+    TransformLastName transform_last_name_config = 32;
+    TransformPhoneNumber transform_phone_number_config = 33;
+    TransformString transform_string_config = 34;
+    Passthrough passthrough_config = 35;
+    Null nullconfig = 36;
+    UserDefinedTransformerConfig user_defined_transformer_config = 37;
+    GenerateDefault generate_default_config = 38;
+    TransformJavascript transform_javascript_config = 39;
+    GenerateCategorical generate_categorical_config = 40;
+    TransformCharacterScramble transform_character_scramble_config = 41;
+    GenerateJavascript generate_javascript_config = 42;
+    GenerateCountry generate_country_config = 43;
+    // NeosyncCloud/Enterprise only transformer for anonymizing PII Text
+    TransformPiiText transform_pii_text_config = 44;
+    GenerateBusinessName generate_business_name_config = 45;
+    GenerateIpAddress generate_ip_address_config = 46;
+    TransformUuid transform_uuid_config = 47;
+    // Scrambles an integer while keeping it unique.
+    TransformScrambleIdentity transform_scramble_identity_config = 48;
+  }
+}
+
+// Takes an input integer and scrambles it, effectively outputing another integer that is not the same as the input.
+// This is effectively a random integer generator that has unique properties.
+message TransformScrambleIdentity {}
+
+// NeosyncCloud/Enterprise only transformer for anonymizing PII Text
+message TransformPiiText {
+  // Minimal detection score for determining PII. 0.0-1.0
+  float score_threshold = 1 [
+    (buf.validate.field).float.gte = 0.0,
+    (buf.validate.field).float.lte = 1.0
+  ];
+  // The default anonmyization config used for all instances of detected PII.
+  PiiAnonymizer default_anonymizer = 2;
+
+  // Configure deny lists where each word is treated as PII.
+  repeated PiiDenyRecognizer deny_recognizers = 3;
+
+  // Configure a list of entities to be used for PII analysis. If not provided or empty, all entities are considiered
+  // If this is specified, any ad-hoc, or deny_recognizers entity names must also be provided.
+  // To see available builtin entities, call the GetPiiTextEntities() RPC method to see what is available for your account.
+  repeated string allowed_entities = 4 [(buf.validate.field).repeated = {
+    items: {
+      string: {min_len: 1}
+    }
+  }];
+
+  // Exact match of PII phrases identified by the analysis engine.
+  repeated string allowed_phrases = 5;
+
+  // Two characters for the desired language in ISO_639-1 format.
+  // If not provided, will use a default language if specified on the server.
+  // Depending on the server configuration, may attempt to autodetect from input.
+  optional string language = 6;
+
+  // A map of entity names to anonymizer configurations.
+  // The key in this map corresponds to a recognized entity (e.g. PERSON, PHONE_NUMBER) which can be found via the GetPiiTextEntities() RPC method.
+  // The value in this map corresponds to the anonymizer configuration to use for that entity.
+  // If not provided, the default_anonymizer will be used.
+  map<string, PiiAnonymizer> entity_anonymizers = 7;
+}
+
+message PiiDenyRecognizer {
+  // Friendly name of this entity
+  string name = 1 [(buf.validate.field).string.pattern = "^[a-z0-9-_]{1,100}$"];
+  // List of words that will be treated as PII.
+  repeated string deny_words = 2 [(buf.validate.field).repeated = {
+    items: {
+      string: {min_len: 1}
+    }
+  }];
+}
+
+message PiiAnonymizer {
+  oneof config {
+    // Configures the anonymizer to replace the identified PII with a specific value
+    Replace replace = 1;
+    // Configures the anonymizer to completely remove the identified PII
+    Redact redact = 2;
+    // Configures the anonymizer to mask the identified PII
+    Mask mask = 3;
+    // Configures the anonymizer to hash the identified PII
+    Hash hash = 4;
+    // Configures the anonymizer to use a Neosync configured transformer
+    Transform transform = 5;
+  }
+
+  message Replace {
+    // The value to replace. If not provided, a template token of the anonymizer is used (e.g. A PERSON entity is replaced with: <PERSON>)
+    optional string value = 1;
+  }
+  message Redact {}
+  message Mask {
+    // Provide a character that will be used for the replacement.
+    optional string masking_char = 1;
+    // How many characters to mask.
+    optional int32 chars_to_mask = 2;
+    // Whether to mask the PII from start or end
+    optional bool from_end = 3;
+  }
+  message Hash {
+    // The hashing algorithm to use.
+    optional HashType algo = 1;
+
+    enum HashType {
+      // If unspecified, defaults to md5
+      HASH_TYPE_UNSPECIFIED = 0;
+      // The MD5 Hash Algorithm
+      HASH_TYPE_MD5 = 1;
+      // The SHA256 Hash Algorithm
+      HASH_TYPE_SHA256 = 2;
+      // The SHA512 Hash Algorithm
+      HASH_TYPE_SHA512 = 3;
+    }
+  }
+  message Transform {
+    // The transformer to use. If not provided, a transformer will automatically be selected (if supported), otherwise it falls back to generating a random hash.
+    TransformerConfig config = 1;
+  }
+}
+
+enum GenerateEmailType {
+  // Unspecified defaults to uuid v4
+  GENERATE_EMAIL_TYPE_UNSPECIFIED = 0;
+  // Generates a random uuid v4 (without hyphens) on the left side of the @. This has all the uniqueness guarantees of the standard uuid v4, along with randomized domains.
+  GENERATE_EMAIL_TYPE_UUID_V4 = 1;
+  // Generates a full name (firstnamelastname) on the left side of the @. This has high cardinality but is not guaranteed to be unique.
+  GENERATE_EMAIL_TYPE_FULLNAME = 2;
+}
+
+message GenerateEmail {
+  // Optionally specify the type of email to generate. The types specified determine the contents on the left side of the @.
+  optional GenerateEmailType email_type = 1;
+}
+
+// Action enumeration that dictates what the transform_email transformer should do in the case that it encounters an email that does not conform to RFC 5322
+enum InvalidEmailAction {
+  // Unspecified defaults to reject.
+  INVALID_EMAIL_ACTION_UNSPECIFIED = 0;
+  // If an invalid email is encountered, the transformer will reject the transformation and exit.
+  INVALID_EMAIL_ACTION_REJECT = 1;
+  // The result of the email will be null. This should only be specified if the destination column is also nullable.
+  INVALID_EMAIL_ACTION_NULL = 2;
+  // The result of the email will be identical to the original value, unmodified.
+  INVALID_EMAIL_ACTION_PASSTHROUGH = 3;
+  // The result of the email will be a brand new generated email. This is the same result as the generate_email transformer.
+  INVALID_EMAIL_ACTION_GENERATE = 4;
+}
+
+message TransformEmail {
+  // Whether or not to preserve the original domain, barring what has been specified in the excluded_domains property.
+  optional bool preserve_domain = 1;
+  // Whether or not to preserve the original length of the email. This causes the transformed email to retain the original length.
+  optional bool preserve_length = 2;
+  // A lsit of email domains that should be excluded. This changes based on the preserve_domain flag. See the docs for more details.
+  repeated string excluded_domains = 3;
+  // Optionally specify the type of email to generate. The types specified determine the contents on the left side of the @.
+  optional GenerateEmailType email_type = 4;
+  // Optionally specify an action in the result of an invalid email. An invalid email is one that does not conform to RFC 5322.
+  optional InvalidEmailAction invalid_email_action = 5;
+}
+
+message GenerateBool {}
+
+message GenerateCardNumber {
+  // Whether or not to validate the card number using the Luhn algorithm.
+  optional bool valid_luhn = 1;
+}
+
+message GenerateCity {}
+
+message GenerateDefault {}
+
+message GenerateE164PhoneNumber {
+  // The minimum length of the phone number to generate.
+  optional int64 min = 1;
+  // The maximum length of the phone number to generate.
+  optional int64 max = 2;
+}
+
+message GenerateFirstName {}
+
+message GenerateFloat64 {
+  // Whether or not to randomize the sign of the float64.
+  optional bool randomize_sign = 1;
+  // The minimum value to randomize the float64 to.
+  optional double min = 2;
+  // The maximum value to randomize the float64 to.
+  optional double max = 3;
+  // The precision of the float64 to generate.
+  optional int64 precision = 4;
+}
+
+message GenerateFullAddress {}
+
+message GenerateFullName {}
+
+message GenerateGender {
+  // Whether or not to abbreviate the gender.
+  optional bool abbreviate = 1;
+}
+
+message GenerateInt64PhoneNumber {}
+
+message GenerateInt64 {
+  // Whether or not to randomize the sign of the int64.
+  optional bool randomize_sign = 1;
+  // The minimum value to randomize the int64 to.
+  optional int64 min = 2;
+  // The maximum value to randomize the int64 to.
+  optional int64 max = 3;
+}
+
+message GenerateLastName {}
+
+message GenerateSha256Hash {}
+message GenerateSSN {}
+
+message GenerateState {
+  // An option to return the full state name of the randomly selected state or return the default of a 2-letter state code.
+  optional bool generate_full_name = 1;
+}
+
+message GenerateStreetAddress {}
+
+message GenerateStringPhoneNumber {
+  reserved 1;
+  // The minimum length of the phone number to generate.
+  optional int64 min = 2;
+  // The maximum length of the phone number to generate.
+  optional int64 max = 3;
+}
+
+message GenerateString {
+  // The minimum length of the string to generate.
+  optional int64 min = 1;
+  // The maximum length of the string to generate.
+  optional int64 max = 2;
+}
+
+message GenerateUnixTimestamp {}
+
+message GenerateUsername {}
+
+message GenerateUtcTimestamp {}
+
+message GenerateUuid {
+  // Whether or not to include hyphens in the uuid. Defaults to true. If false, the uuid will be returned without hyphens.
+  optional bool include_hyphens = 1;
+}
+
+message GenerateZipcode {}
+
+message TransformE164PhoneNumber {
+  // Whether or not to preserve the original length of the phone number. This causes the transformed phone number to retain the original length.
+  optional bool preserve_length = 1;
+}
+
+message TransformFirstName {
+  // Whether or not to preserve the original length of the first name. This causes the transformed first name to retain the original length.
+  optional bool preserve_length = 1;
+}
+
+message TransformFloat64 {
+  // The minimum value to randomize the float64 to. This will be relative to the original value.
+  optional double randomization_range_min = 1;
+  // The maximum value to randomize the float64 to. This will be relative to the original value.
+  optional double randomization_range_max = 2;
+}
+
+message TransformFullName {
+  // Whether or not to preserve the original length of the full name. This causes the transformed full name to retain the original length.
+  optional bool preserve_length = 1;
+}
+
+message TransformInt64PhoneNumber {
+  // Whether or not to preserve the original length of the phone number. This causes the transformed phone number to retain the original length.
+  optional bool preserve_length = 1;
+}
+
+message TransformInt64 {
+  // The minimum value to randomize the int64 to. This will be relative to the original value.
+  optional int64 randomization_range_min = 1;
+  // The maximum value to randomize the int64 to. This will be relative to the original value.
+  optional int64 randomization_range_max = 2;
+}
+
+message TransformLastName {
+  // Whether or not to preserve the original length of the last name. This causes the transformed last name to retain the original length.
+  optional bool preserve_length = 1;
+}
+
+message TransformPhoneNumber {
+  // Whether or not to preserve the original length of the phone number. This causes the transformed phone number to retain the original length.
+  optional bool preserve_length = 1;
+}
+
+message TransformString {
+  // Whether or not to preserve the original length of the string. This causes the transformed string to retain the original length.
+  optional bool preserve_length = 1;
+}
+
+message Passthrough {}
+
+message Null {}
+
+message TransformJavascript {
+  // The user provided javascript code that will be executed in the transformer
+  string code = 1;
+}
+
+message UserDefinedTransformerConfig {
+  // The id of the user defined transformer. When used in a job mapping, this will be used to reference the underlying system transformer along with it's configuration that was chosen.
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ValidateUserJavascriptCodeRequest {
+  reserved 1; // Was: string account_id = 1;
+  // The user provided javascript code that will be validated.
+  string code = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message ValidateUserJavascriptCodeResponse {
+  bool valid = 1;
+}
+
+message GenerateCategorical {
+  // A comma separated list of categories that will be used to generate a random value from.
+  optional string categories = 1;
+}
+
+message TransformCharacterScramble {
+  // A user provided regular expression that will be used to scramble the characters in the input string. Must be a valid Golang regex.
+  optional string user_provided_regex = 1;
+}
+
+message GenerateJavascript {
+  // The user provided javascript code that will be executed in the transformer
+  string code = 1;
+}
+
+message ValidateUserRegexCodeRequest {
+  reserved 1; // Was: string account_id = 1;
+  // The user provided regex to validate
+  string user_provided_regex = 2;
+}
+
+message ValidateUserRegexCodeResponse {
+  // Whether the regex is valid
+  bool valid = 1;
+}
+
+message GenerateCountry {
+  // An option to return the full country name of the randomly selected country or return the default of a 2-letter country code.
+  optional bool generate_full_name = 1;
+}
+
+message GetTransformPiiEntitiesRequest {
+  // The unique identifier of the account to return entities for.
+  string account_id = 1 [(buf.validate.field).string.uuid = true];
+}
+message GetTransformPiiEntitiesResponse {
+  // The list of built-in entities that are enabled for the provided account id.
+  repeated string entities = 1;
+}
+
+message GenerateBusinessName {}
+
+enum GenerateIpAddressType {
+  // Unspecified defaults to ipv4
+  GENERATE_IP_ADDRESS_TYPE_UNSPECIFIED = 0;
+  // Generates a random ipv4_public
+  GENERATE_IP_ADDRESS_TYPE_V4_PUBLIC = 1;
+  // Generates a random ipv4_private_a
+  GENERATE_IP_ADDRESS_TYPE_V4_PRIVATE_A = 2;
+  // Generates a random ipv4_private_b
+  GENERATE_IP_ADDRESS_TYPE_V4_PRIVATE_B = 3;
+  // Generates a random ipv4_private_c
+  GENERATE_IP_ADDRESS_TYPE_V4_PRIVATE_C = 4;
+  // Generates a random ipv4_linklocal
+  GENERATE_IP_ADDRESS_TYPE_V4_LINK_LOCAL = 5;
+  // Generates a random ipv4_multicast
+  GENERATE_IP_ADDRESS_TYPE_V4_MULTICAST = 6;
+  // Generates a random ipv4_loopback
+  GENERATE_IP_ADDRESS_TYPE_V4_LOOPBACK = 7;
+  // Generates a random ipv6
+  GENERATE_IP_ADDRESS_TYPE_V6 = 8;
+}
+
+message GenerateIpAddress {
+  // Optionally specify the type of ip address to generate.
+  optional GenerateIpAddressType ip_type = 1;
+}
+
+message TransformUuid {}
+
+// Service that manages system and user defined transformers
+service TransformersService {
+  // Get a list of all system transformers
+  rpc GetSystemTransformers(GetSystemTransformersRequest) returns (GetSystemTransformersResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Get a system transformer by its source
+  rpc GetSystemTransformerBySource(GetSystemTransformerBySourceRequest) returns (GetSystemTransformerBySourceResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Get a list of all user defined transformers
+  rpc GetUserDefinedTransformers(GetUserDefinedTransformersRequest) returns (GetUserDefinedTransformersResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Get a user defined transformer by its id
+  rpc GetUserDefinedTransformerById(GetUserDefinedTransformerByIdRequest) returns (GetUserDefinedTransformerByIdResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // Create a user defined transformer
+  rpc CreateUserDefinedTransformer(CreateUserDefinedTransformerRequest) returns (CreateUserDefinedTransformerResponse) {}
+  // Delete a user defined transformer
+  rpc DeleteUserDefinedTransformer(DeleteUserDefinedTransformerRequest) returns (DeleteUserDefinedTransformerResponse) {}
+  // Update a user defined transformer
+  rpc UpdateUserDefinedTransformer(UpdateUserDefinedTransformerRequest) returns (UpdateUserDefinedTransformerResponse) {}
+  // Check if a transformer name is available in your account
+  rpc IsTransformerNameAvailable(IsTransformerNameAvailableRequest) returns (IsTransformerNameAvailableResponse) {}
+  // Validate user provided javascript code before saving it to a user defined transformer or within a job mapping
+  rpc ValidateUserJavascriptCode(ValidateUserJavascriptCodeRequest) returns (ValidateUserJavascriptCodeResponse) {}
+  // Validate user provided regex code before saving it to a user defined transformer
+  rpc ValidateUserRegexCode(ValidateUserRegexCodeRequest) returns (ValidateUserRegexCodeResponse) {}
+
+  // Retrieve a list of available Pii entities for use with the TransformPiiText transformer
+  rpc GetTransformPiiEntities(GetTransformPiiEntitiesRequest) returns (GetTransformPiiEntitiesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}

@@ -1,0 +1,131 @@
+version: "2"
+run:
+  tests: false
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - dogsled
+    - errcheck
+    - forbidigo
+    - goconst
+    - gocritic
+    - goprintffuncname
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - noctx
+    - nolintlint
+    - revive
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - whitespace
+  settings:
+    dupl:
+      threshold: 150
+    funlen:
+      lines: -1
+      statements: 50
+    goconst:
+      min-len: 2
+      min-occurrences: 10
+    gocritic:
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    gocyclo:
+      min-complexity: 10
+    lll:
+      line-length: 140
+    misspell:
+      locale: US
+    mnd:
+      checks:
+        - argument
+        - case
+        - condition
+        - return
+      ignored-numbers:
+        - "0"
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+      ignored-functions:
+        - strings.SplitN
+    nolintlint:
+      require-explanation: false
+      require-specific: false
+      allow-unused: false
+    revive:
+      rules:
+        - name: unexported-return
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - gocritic
+          - staticcheck
+          - whitespace
+        path: ^mock_.*\.go$
+    paths:
+      - frontend
+      - charts
+      - docs
+      - node_modules
+      - backend/gen
+      - tilt
+      - scripts
+      - python
+      - keycloak
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+    - golines
+  settings:
+    gofmt:
+      rewrite-rules:
+        - pattern: interface{}
+          replacement: any
+    golines:
+      max-len: 140
+  exclusions:
+    generated: lax
+    paths:
+      - frontend
+      - charts
+      - docs
+      - node_modules
+      - backend/gen
+      - tilt
+      - scripts
+      - python
+      - keycloak
+      - third_party$
+      - builtin$
+      - examples$
+      - ^mock_.*\.go$
