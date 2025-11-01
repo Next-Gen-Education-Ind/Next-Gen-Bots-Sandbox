@@ -733,7 +733,7 @@ jobs:
           python -m build
         env:
           SETUPTOOLS_SCM_PRETEND_VERSION: ${{ steps.package_version.outputs.PACKAGE_VERSION }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: py-package
           path: python/dist/
